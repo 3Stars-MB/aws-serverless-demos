@@ -1,0 +1,246 @@
+{
+  "/home/starsmb/darede/clientes/paraty-energia/training/dynamodb-demo/serverless.yml": {
+    "versionFramework": "4.22.0",
+    "servicePath": "/home/starsmb/darede/clientes/paraty-energia/training/dynamodb-demo/serverless.yml",
+    "serviceConfigFileName": "serverless.yml",
+    "service": {
+      "service": "ecommerce-dynamodb-demo",
+      "frameworkVersion": "4",
+      "provider": {
+        "name": "aws",
+        "runtime": "nodejs20.x",
+        "region": "us-east-1",
+        "stage": "dev",
+        "environment": {
+          "TABLE_NAME": "ecommerce-dynamodb-demo-products-dev",
+          "APP_REGION": "us-east-1"
+        },
+        "iam": {
+          "role": {
+            "statements": [
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "dynamodb:Scan",
+                  "dynamodb:GetItem",
+                  "dynamodb:PutItem",
+                  "dynamodb:UpdateItem",
+                  "dynamodb:DeleteItem"
+                ],
+                "Resource": [
+                  {
+                    "Fn::GetAtt": [
+                      "ProductsTable",
+                      "Arn"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "versionFunctions": true
+      },
+      "custom": {
+        "tableName": "ecommerce-dynamodb-demo-products-dev"
+      },
+      "functions": {
+        "listProducts": {
+          "handler": "src/handlers/listProducts.handler",
+          "events": [
+            {
+              "httpApi": {
+                "path": "/products",
+                "method": "get"
+              }
+            }
+          ],
+          "description": "Lista todos os produtos disponíveis no e-commerce",
+          "name": "ecommerce-dynamodb-demo-dev-listProducts"
+        },
+        "getProduct": {
+          "handler": "src/handlers/getProduct.handler",
+          "events": [
+            {
+              "httpApi": {
+                "path": "/products/{id}",
+                "method": "get"
+              }
+            }
+          ],
+          "description": "Retorna um produto específico pelo ID",
+          "name": "ecommerce-dynamodb-demo-dev-getProduct"
+        }
+      },
+      "resources": {
+        "Resources": {
+          "ProductsTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+              "TableName": "ecommerce-dynamodb-demo-products-dev",
+              "BillingMode": "PAY_PER_REQUEST",
+              "AttributeDefinitions": [
+                {
+                  "AttributeName": "PK",
+                  "AttributeType": "S"
+                },
+                {
+                  "AttributeName": "SK",
+                  "AttributeType": "S"
+                }
+              ],
+              "KeySchema": [
+                {
+                  "AttributeName": "PK",
+                  "KeyType": "HASH"
+                },
+                {
+                  "AttributeName": "SK",
+                  "KeyType": "RANGE"
+                }
+              ],
+              "Tags": [
+                {
+                  "Key": "Environment",
+                  "Value": "dev"
+                },
+                {
+                  "Key": "Service",
+                  "Value": "ecommerce-dynamodb-demo"
+                }
+              ]
+            }
+          }
+        },
+        "Outputs": {
+          "ProductsTableName": {
+            "Description": "Nome da tabela DynamoDB",
+            "Value": {
+              "Ref": "ProductsTable"
+            }
+          },
+          "ProductsTableArn": {
+            "Description": "ARN da tabela DynamoDB",
+            "Value": {
+              "Fn::GetAtt": [
+                "ProductsTable",
+                "Arn"
+              ]
+            }
+          },
+          "ApiGatewayUrl": {
+            "Description": "URL base da API",
+            "Value": {
+              "Fn::Sub": "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+            }
+          }
+        }
+      }
+    },
+    "provider": {
+      "name": "aws",
+      "runtime": "nodejs20.x",
+      "region": "us-east-1",
+      "stage": "dev",
+      "environment": {
+        "TABLE_NAME": "ecommerce-dynamodb-demo-products-dev",
+        "APP_REGION": "us-east-1"
+      },
+      "iam": {
+        "role": {
+          "statements": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "dynamodb:Scan",
+                "dynamodb:GetItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem"
+              ],
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "ProductsTable",
+                    "Arn"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "versionFunctions": true
+    },
+    "dashboard": {
+      "isEnabledForService": false,
+      "requiredAuthentication": false,
+      "orgFeaturesInUse": null,
+      "orgObservabilityIntegrations": null,
+      "serviceAppId": null,
+      "serviceProvider": null,
+      "instanceParameters": null
+    },
+    "serviceRawFile": "service: ecommerce-dynamodb-demo\n\nframeworkVersion: \"4\"\n\nprovider:\n  name: aws\n  runtime: nodejs20.x\n  region: us-east-1\n  stage: dev\n\n  # Variáveis de ambiente para as funções Lambda\n  environment:\n    TABLE_NAME: ${self:custom.tableName}\n    APP_REGION: ${self:provider.region}\n\n  # Permissões IAM para acessar DynamoDB\n  iam:\n    role:\n      statements:\n        - Effect: Allow\n          Action:\n            - dynamodb:Scan\n            - dynamodb:GetItem\n            - dynamodb:PutItem\n            - dynamodb:UpdateItem\n            - dynamodb:DeleteItem\n          Resource:\n            - !GetAtt ProductsTable.Arn\n\ncustom:\n  tableName: ${self:service}-products-${self:provider.stage}\n\nfunctions:\n  # Função para listar todos os produtos\n  listProducts:\n    handler: src/handlers/listProducts.handler\n    events:\n      - httpApi:\n          path: /products\n          method: get\n    description: \"Lista todos os produtos disponíveis no e-commerce\"\n\n  # Função para buscar produto por ID\n  getProduct:\n    handler: src/handlers/getProduct.handler\n    events:\n      - httpApi:\n          path: /products/{id}\n          method: get\n    description: \"Retorna um produto específico pelo ID\"\n\nresources:\n  Resources:\n    # Tabela DynamoDB para produtos\n    ProductsTable:\n      Type: AWS::DynamoDB::Table\n      Properties:\n        TableName: ${self:custom.tableName}\n        BillingMode: PAY_PER_REQUEST\n\n        # Definição das chaves primárias\n        AttributeDefinitions:\n          - AttributeName: PK\n            AttributeType: S\n          - AttributeName: SK\n            AttributeType: S\n\n        # Chave composta: PK (partition key) + SK (sort key)\n        KeySchema:\n          - AttributeName: PK\n            KeyType: HASH # Partition Key\n          - AttributeName: SK\n            KeyType: RANGE # Sort Key\n\n        # Tags para organização\n        Tags:\n          - Key: Environment\n            Value: ${self:provider.stage}\n          - Key: Service\n            Value: ${self:service}\n\n  Outputs:\n    # Outputs úteis para referência\n    ProductsTableName:\n      Description: \"Nome da tabela DynamoDB\"\n      Value: !Ref ProductsTable\n\n    ProductsTableArn:\n      Description: \"ARN da tabela DynamoDB\"\n      Value: !GetAtt ProductsTable.Arn\n\n    ApiGatewayUrl:\n      Description: \"URL base da API\"\n      Value: !Sub \"https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com\"\n",
+    "command": [
+      "remove"
+    ],
+    "options": {},
+    "orgId": "f4c6b099-a4eb-47b5-af4e-5fef6e218335",
+    "orgName": "requinoplatforms",
+    "userId": "zDc9TmykpcnxpWqr2G",
+    "userName": "requinoplatforms",
+    "serviceProviderAwsAccountId": "008460183202",
+    "serviceProviderAwsCfStackName": "ecommerce-dynamodb-demo-dev",
+    "serviceProviderAwsCfStackId": "arn:aws:cloudformation:us-east-1:008460183202:stack/ecommerce-dynamodb-demo-dev/438fb000-b039-11f0-9d19-126d8c1b6fc3",
+    "serviceProviderAwsCfStackCreated": "2025-10-23T17:54:04.287Z",
+    "serviceProviderAwsCfStackUpdated": null,
+    "serviceProviderAwsCfStackStatus": "CREATE_COMPLETE",
+    "serviceProviderAwsCfStackOutputs": [
+      {
+        "OutputKey": "ApiGatewayUrl",
+        "OutputValue": "https://1xpo7ogh21.execute-api.us-east-1.amazonaws.com",
+        "Description": "URL base da API"
+      },
+      {
+        "OutputKey": "ProductsTableArn",
+        "OutputValue": "arn:aws:dynamodb:us-east-1:008460183202:table/ecommerce-dynamodb-demo-products-dev",
+        "Description": "ARN da tabela DynamoDB"
+      },
+      {
+        "OutputKey": "ListProductsLambdaFunctionQualifiedArn",
+        "OutputValue": "arn:aws:lambda:us-east-1:008460183202:function:ecommerce-dynamodb-demo-dev-listProducts:1",
+        "Description": "Current Lambda function version",
+        "ExportName": "sls-ecommerce-dynamodb-demo-dev-ListProductsLambdaFunctionQualifiedArn"
+      },
+      {
+        "OutputKey": "ProductsTableName",
+        "OutputValue": "ecommerce-dynamodb-demo-products-dev",
+        "Description": "Nome da tabela DynamoDB"
+      },
+      {
+        "OutputKey": "HttpApiId",
+        "OutputValue": "1xpo7ogh21",
+        "Description": "Id of the HTTP API",
+        "ExportName": "sls-ecommerce-dynamodb-demo-dev-HttpApiId"
+      },
+      {
+        "OutputKey": "ServerlessDeploymentBucketName",
+        "OutputValue": "serverless-framework-deployments-us-east-1-e1d1839f-b5a0",
+        "ExportName": "sls-ecommerce-dynamodb-demo-dev-ServerlessDeploymentBucketName"
+      },
+      {
+        "OutputKey": "GetProductLambdaFunctionQualifiedArn",
+        "OutputValue": "arn:aws:lambda:us-east-1:008460183202:function:ecommerce-dynamodb-demo-dev-getProduct:1",
+        "Description": "Current Lambda function version",
+        "ExportName": "sls-ecommerce-dynamodb-demo-dev-GetProductLambdaFunctionQualifiedArn"
+      },
+      {
+        "OutputKey": "HttpApiUrl",
+        "OutputValue": "https://1xpo7ogh21.execute-api.us-east-1.amazonaws.com",
+        "Description": "URL of the HTTP API",
+        "ExportName": "sls-ecommerce-dynamodb-demo-dev-HttpApiUrl"
+      }
+    ]
+  }
+}
