@@ -1,0 +1,37 @@
+service: lambda-best-practices
+frameworkVersion: "4"
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-1
+  timeout: 10
+  memorySize: 256
+  environment:
+    SNS_TOPIC_ARN: ${env:SNS_TOPIC_ARN}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:GetObject
+      Resource: arn:aws:s3:::paraty-demo/*
+    - Effect: Allow
+      Action:
+        - sns:Publish
+      Resource: ${env:SNS_TOPIC_ARN}
+    - Effect: Allow
+      Action:
+        - cloudWatch:*
+      Resource: "*"
+
+functions:
+  processS3Object:
+    handler: src/index.handler
+    description: "Processa arquivos enviados ao S3 e envia notificação via SNS"
+    events:
+      - s3:
+          bucket: paraty-demo
+          event: s3:ObjectCreated:Put
+          existing: true
+
+plugins:
+  - serverless-dotenv-plugin

@@ -1,0 +1,23 @@
+{
+  "name": "aws-monitoring-workshop",
+  "version": "1.0.0",
+  "description": "AWS Monitoring and Observability Workshop",
+  "main": "handler.js",
+  "scripts": {
+    "deploy": "serverless deploy",
+    "remove": "serverless remove",
+    "logs": "serverless logs -f processData -t"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.450.0",
+    "@aws-sdk/util-dynamodb": "^3.450.0",
+    "aws-xray-sdk-core": "^3.5.1"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.126",
+    "@types/node": "^20.8.0",
+    "serverless": "^3.35.0",
+    "serverless-plugin-typescript": "^2.1.4",
+    "typescript": "^5.2.2"
+  }
+}

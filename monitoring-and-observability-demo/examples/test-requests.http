@@ -1,0 +1,25 @@
+### Create Data Item
+POST {{baseUrl}}/data
+Content-Type: application/json
+
+{
+  "name": "Sample Product",
+  "value": 29.99
+}
+
+### Create Another Data Item
+POST {{baseUrl}}/data
+Content-Type: application/json
+
+{
+  "name": "Premium Service",
+  "value": 199.99
+}
+
+### Test Error Handling
+POST {{baseUrl}}/data
+Content-Type: application/json
+
+{
+  "value": 50.00
+}

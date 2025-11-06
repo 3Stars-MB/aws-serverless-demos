@@ -1,0 +1,20 @@
+{
+  "name": "books-crud-api",
+  "version": "1.0.0",
+  "description": "Simple CRUD API for books using Serverless Framework and DynamoDB",
+  "main": "handler.js",
+  "type": "module",
+  "scripts": {
+    "deploy": "serverless deploy",
+    "remove": "serverless remove"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.490.0",
+    "@aws-sdk/lib-dynamodb": "^3.490.0",
+    "@aws-sdk/client-cognito-identity-provider": "^3.490.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "serverless": "^3.38.0"
+  }
+}

@@ -1,0 +1,85 @@
+service: ecommerce-dynamodb-demo
+
+frameworkVersion: '4'
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-1
+  stage: dev
+  
+  environment:
+    TABLE_NAME: ${self:custom.tableName}
+    AWS_REGION: ${self:provider.region}
+  
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource:
+            - !GetAtt ProductsTable.Arn
+
+custom:
+  tableName: ${self:service}-products-${self:provider.stage}
+
+functions:
+  listProducts:
+    handler: src/handlers/listProducts.handler
+    events:
+      - httpApi:
+          path: /products
+          method: get
+    description: "Lista todos os produtos disponíveis no e-commerce"
+
+  getProduct:
+    handler: src/handlers/getProduct.handler
+    events:
+      - httpApi:
+          path: /products/{id}
+          method: get
+    description: "Retorna um produto específico pelo ID"
+
+resources:
+  Resources:
+    ProductsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.tableName}
+        BillingMode: PAY_PER_REQUEST
+        
+        AttributeDefinitions:
+          - AttributeName: PK
+            AttributeType: S
+          - AttributeName: SK
+            AttributeType: S
+        
+        KeySchema:
+          - AttributeName: PK
+            KeyType: HASH
+          - AttributeName: SK
+            KeyType: RANGE
+        
+        Tags:
+          - Key: Environment
+            Value: ${self:provider.stage}
+          - Key: Service
+            Value: ${self:service}
+
+  Outputs:
+    ProductsTableName:
+      Description: "Nome da tabela DynamoDB"
+      Value: !Ref ProductsTable
+    
+    ProductsTableArn:
+      Description: "ARN da tabela DynamoDB"
+      Value: !GetAtt ProductsTable.Arn
+    
+    ApiGatewayUrl:
+      Description: "URL base da API"
+      Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"

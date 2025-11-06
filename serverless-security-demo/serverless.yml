@@ -1,0 +1,78 @@
+service: serverless-security-demo
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  environment:
+    MESSAGES_TABLE: ${self:service}-messages-${sls:stage}
+    KMS_KEY_ID: !Ref KMSKey
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:GetItem
+            - dynamodb:Scan
+          Resource: !GetAtt MessagesTable.Arn
+        - Effect: Allow
+          Action:
+            - kms:Encrypt
+            - kms:Decrypt
+          Resource: !GetAtt KMSKey.Arn
+
+plugins:
+  - serverless-esbuild
+
+functions:
+  createMessage:
+    handler: src/handlers/messageHandler.create
+    events:
+      - http:
+          path: messages
+          method: post
+          authorizer: aws_iam
+
+  getMessage:
+    handler: src/handlers/messageHandler.get
+    events:
+      - http:
+          path: messages/{id}
+          method: get
+          authorizer: aws_iam
+
+  listMessages:
+    handler: src/handlers/messageHandler.list
+    events:
+      - http:
+          path: messages
+          method: get
+          authorizer: aws_iam
+
+resources:
+  Resources:
+    MessagesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.MESSAGES_TABLE}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        SSESpecification:
+          SSEEnabled: true
+
+    KMSKey:
+      Type: AWS::KMS::Key
+      Properties:
+        KeyPolicy:
+          Statement:
+            - Effect: Allow
+              Principal:
+                AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+              Action: 'kms:*'
+              Resource: '*'

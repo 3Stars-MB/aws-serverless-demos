@@ -1,0 +1,26 @@
+{
+  "name": "ecommerce-dynamodb-demo",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Serverless e-commerce demo showcasing DynamoDB NoSQL modeling with SOLID architecture",
+  "main": "src/handlers/listProducts.js",
+  "scripts": {
+    "deploy": "serverless deploy",
+    "remove": "serverless remove",
+    "logs": "serverless logs -f",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": ["dynamodb", "serverless", "ecommerce", "aws", "lambda", "solid"],
+  "author": "Matheus Requino - Darede",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.490.0",
+    "@aws-sdk/lib-dynamodb": "^3.490.0"
+  },
+  "devDependencies": {
+    "serverless": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
